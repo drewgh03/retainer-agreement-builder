@@ -1,0 +1,42 @@
+# ---- Secrets: never commit these ----
+.env
+.env.*
+!.env.example
+*.env
+.envrc
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+id_rsa*
+id_ed25519*
+id_ecdsa*
+secrets.*
+*secret*.json
+credentials*.json
+service-account*.json
+*apikey*
+*api_key*
+*api-key*
+.npmrc
+.pypirc
+.netrc
+.aws/
+.ssh/
+.config/gcloud/
+
+# ---- Generated or scratch files ----
+templates*.json
+__pycache__/
+*.pyc
+node_modules/
+scratch/
+*.log
+
+# ---- OS and editor files ----
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

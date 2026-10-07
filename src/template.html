@@ -1,0 +1,912 @@
+<title>Retainer Agreement Builder</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Dancing+Script:wght@600&display=swap">
+<style>
+/* Layout: the real retainer letter reflowed for a phone. The yellow blanks from your PDF sit inside the sentences, a bottom bar holds the one action, and the result is the actual PDF rendered page by page. */
+:root {
+  --bg: #EEF1F4;
+  --paper: #FFFFFF;
+  --fg: #14202B;
+  --muted: #566776;
+  --line: #CFD8E0;
+  --accent: #1D5C7C;
+  --accent-fg: #FFFFFF;
+  --danger: #B3261E;
+  --ok: #1B7A4D;
+  --blank-bg: #FFF0BD;
+  --blank-line: #D9A400;
+  --blank-ok: #E6F1EA;
+  --blank-ok-line: #2E8B57;
+  --desk: #C9D2DA;
+  --shadow: rgba(20, 32, 43, 0.18);
+  --sig-paper: #FFFFFF;
+  --sig-line: #9AA9B6;
+  --font-body: "Public Sans", -apple-system, "SF Pro Text", system-ui, "Helvetica Neue", Arial, sans-serif;
+  --font-letter: "Source Serif 4", "New York", Georgia, "Times New Roman", serif;
+  --font-script: "Dancing Script", "Snell Roundhand", "Apple Chancery", "Brush Script MT", cursive;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0D141A;
+    --paper: #15202A;
+    --fg: #E7EEF4;
+    --muted: #94A5B4;
+    --line: #2B3A47;
+    --accent: #78BADB;
+    --accent-fg: #07202D;
+    --danger: #FF8F86;
+    --ok: #6FD3A2;
+    --blank-bg: #4A3B0D;
+    --blank-line: #E0B52A;
+    --blank-ok: #173626;
+    --blank-ok-line: #5CC48F;
+    --desk: #070B0F;
+    --shadow: rgba(0, 0, 0, 0.6);
+    --sig-paper: #FFFFFF;
+    --sig-line: #9AA9B6;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0D141A;
+  --paper: #15202A;
+  --fg: #E7EEF4;
+  --muted: #94A5B4;
+  --line: #2B3A47;
+  --accent: #78BADB;
+  --accent-fg: #07202D;
+  --danger: #FF8F86;
+  --ok: #6FD3A2;
+  --blank-bg: #4A3B0D;
+  --blank-line: #E0B52A;
+  --blank-ok: #173626;
+  --blank-ok-line: #5CC48F;
+  --desk: #070B0F;
+  --shadow: rgba(0, 0, 0, 0.6);
+  --sig-paper: #FFFFFF;
+  --sig-line: #9AA9B6;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.45;
+  padding-inline: 16px;
+  padding-block: 20px 120px;
+  -webkit-text-size-adjust: 100%;
+}
+.wrap { max-width: 680px; margin-inline: auto; }
+button { font-family: inherit; }
+
+.eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin: 0 0 6px; }
+h1 { font-family: var(--font-letter); font-weight: 600; font-size: 30px; line-height: 1.12; margin: 0 0 8px; text-wrap: balance; }
+.lede { color: var(--muted); margin: 0 0 16px; max-width: 48ch; }
+.linkish {
+  background: none; border: 0; padding: 10px 0; min-height: 44px;
+  color: var(--accent); font-size: 15px; font-weight: 600;
+  text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+}
+
+/* Payment terms switch */
+.switch { display: grid; gap: 8px; margin-bottom: 8px; }
+.switch .lab { font-size: 14px; font-weight: 600; }
+.seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--paper); }
+.seg button {
+  min-height: 48px; padding: 8px 10px; border: 0; background: transparent; color: var(--fg);
+  font-size: 15px; font-weight: 600; cursor: pointer; line-height: 1.2;
+}
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-checked="true"] { background: var(--accent); color: var(--accent-fg); }
+.seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: -4px; }
+.keyhint { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; margin: 14px 0 10px; }
+.keyhint i { display: inline-block; width: 34px; height: 16px; background: var(--blank-bg); border-bottom: 2px solid var(--blank-line); border-radius: 3px 3px 0 0; }
+
+/* The letter */
+.sheet {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 22px 18px 26px;
+  font-family: var(--font-letter);
+  font-size: 16.5px;
+  line-height: 1.85;
+  box-shadow: 0 1px 2px var(--shadow);
+  overflow-wrap: anywhere;
+}
+.sheet p { margin: 0 0 16px; }
+.sheet .firm { text-align: center; margin-bottom: 4px; }
+.sheet .firm h2 { font-family: var(--font-letter); font-size: 22px; font-weight: 600; letter-spacing: 0.02em; margin: 0; line-height: 1.2; }
+.sheet .firm small { display: block; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; margin-top: 2px; }
+.rule { border: 0; border-top: 1.5px solid var(--fg); margin: 12px 0 14px; }
+.heads { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 24px; font-size: 14px; font-weight: 600; line-height: 1.5; margin-bottom: 18px; }
+.heads div { min-width: 0; }
+.heads .ph span { display: inline-block; min-width: 5.6em; }
+.line { display: block; margin: 0 0 4px; }
+.sheet .u { text-decoration: underline; font-weight: 600; }
+.sheet .re { margin: 14px 0 14px 1.5em; font-weight: 600; text-decoration: underline; }
+.sheet .sec { margin-top: 6px; }
+.sheet .num { font-weight: 600; }
+.sheet .bold { font-weight: 600; }
+.sheet .sign-name { font-family: var(--font-script); font-style: normal; font-weight: 600; font-size: 32px; line-height: 1.2; margin: 4px 0 0; }
+.sheet .tight { line-height: 1.4; margin-bottom: 14px; }
+
+/* Blanks */
+.blank {
+  font-family: var(--font-letter);
+  font-size: 16px; /* 16px stops iOS from zooming on focus */
+  line-height: 1.2;
+  color: var(--fg);
+  background: var(--blank-bg);
+  border: 0;
+  border-bottom: 2px solid var(--blank-line);
+  border-radius: 3px 3px 0 0;
+  padding: 5px 7px;
+  min-height: 38px;
+  width: var(--w, 10em);
+  max-width: 100%;
+  vertical-align: baseline;
+  -webkit-appearance: none;
+  appearance: none;
+  margin-block: 1px;
+}
+select.blank { padding-right: 4px; }
+.blank::placeholder { color: var(--muted); opacity: 0.7; }
+.blank.filled { background: var(--blank-ok); border-bottom-color: var(--blank-ok-line); }
+.blank.invalid { background: transparent; border: 1.5px solid var(--danger); border-radius: 4px; }
+.blank:focus-visible, .linkish:focus-visible, .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.blank.wide { display: block; width: 100%; margin-top: 4px; }
+.optional-label { display: block; font-family: var(--font-body); font-size: 13px; color: var(--muted); line-height: 1.3; margin: 2px 0 2px; }
+.dollar { font-variant-numeric: tabular-nums; }
+
+/* Signature */
+.sigbox { font-family: var(--font-body); margin: 6px 0 4px; }
+.pad {
+  position: relative; aspect-ratio: 5 / 2; max-width: 100%;
+  background: var(--sig-paper); border: 1px solid var(--line); border-radius: 8px; overflow: hidden;
+}
+.pad::after { content: ""; position: absolute; left: 6%; right: 6%; bottom: 24%; border-bottom: 1.5px solid var(--sig-line); pointer-events: none; }
+.pad canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
+.pad .sign-hint { position: absolute; left: 6%; bottom: 8%; font-size: 12px; color: #6C7C8A; pointer-events: none; }
+.pad.has-ink .sign-hint { display: none; }
+.pad-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 36px; }
+.pad-row .state { font-size: 13px; color: var(--muted); }
+.pad-row .state.signed { color: var(--ok); font-weight: 600; }
+.pad-row .linkish { padding-block: 6px; min-height: 36px; }
+.sigmeta { display: grid; gap: 2px; font-size: 16px; margin-top: 4px; }
+.sigmeta label { font-family: var(--font-body); font-size: 13px; color: var(--muted); display: block; margin-top: 8px; }
+
+/* Bottom bar */
+.bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
+  background: var(--paper); border-top: 1px solid var(--line);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+}
+.bar-in { max-width: 680px; margin-inline: auto; display: flex; align-items: center; gap: 14px; }
+.progress { flex: 1; min-width: 0; }
+.progress .count { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.track { height: 5px; background: var(--line); border-radius: 3px; margin-top: 6px; overflow: hidden; }
+.track i { display: block; height: 100%; width: 0; background: var(--accent); transition: width 0.2s ease; }
+.btn { min-height: 48px; padding: 0 22px; border-radius: 8px; border: 1px solid transparent; font-size: 16px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.btn.primary { background: var(--accent); color: var(--accent-fg); }
+.btn.ghost { background: transparent; color: var(--fg); border-color: var(--line); }
+.btn[disabled] { opacity: 0.6; cursor: progress; }
+
+/* Result */
+.topbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 10px; margin-bottom: 8px; }
+.topbar-in { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.topbar-in .btns { display: flex; gap: 10px; }
+.fname { font-weight: 600; font-size: 15px; overflow-wrap: anywhere; }
+.fmeta { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.desk { background: var(--desk); border-radius: 12px; padding: 12px; display: grid; gap: 12px; margin-top: 10px; }
+.desk canvas { display: block; width: 100%; height: auto; background: #fff; box-shadow: 0 1px 3px var(--shadow), 0 6px 18px var(--shadow); }
+.desk .msg { color: var(--fg); font-size: 14px; padding: 18px 8px; text-align: center; }
+.after { display: grid; gap: 4px; margin-top: 18px; }
+.after p { margin: 0; color: var(--muted); font-size: 14px; }
+.toast {
+  position: fixed; left: 16px; right: 16px; bottom: calc(86px + env(safe-area-inset-bottom, 0px)); z-index: 8;
+  max-width: 440px; margin-inline: auto; background: var(--fg); color: var(--bg);
+  padding: 12px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; box-shadow: 0 6px 20px var(--shadow);
+}
+@media (prefers-reduced-motion: reduce) { .track i { transition: none; } }
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+
+<div class="wrap">
+
+  <div id="formView">
+    <p class="eyebrow">Retainer agreement</p>
+    <h1>Fill in the yellow blanks</h1>
+    <p class="lede">This is your Hager &amp; Schwartz retainer letter. Tap a blank and type. A name or county typed once appears everywhere it is used. Tap Create PDF when you are done.</p>
+
+    <div class="switch">
+      <span class="lab" id="termsLab">Payment terms</span>
+      <div class="seg" role="radiogroup" aria-labelledby="termsLab">
+        <button type="button" role="radio" aria-checked="true" data-variant-btn="today">Paid today only</button>
+        <button type="button" role="radio" aria-checked="false" data-variant-btn="trial">Balance + trial fee</button>
+      </div>
+    </div>
+    <div class="keyhint"><i></i><span>Yellow means empty. Green means filled.</span></div>
+    <p class="keyhint" style="margin-top:-2px">The client's full name prints in capitals. Very long names print a little smaller.</p>
+
+    <article class="sheet" id="sheet">
+      <div class="firm"><h2>HAGER &amp; SCHWARTZ, P.A.</h2><small>ATTORNEYS AT LAW</small></div>
+      <hr class="rule">
+      <div class="heads">
+        <div><div>John S. Hager, Esq.</div><div>Brett M. Schwartz, Esq.</div></div>
+        <div class="ph">
+          <div><span>Volusia:</span> (386) 449-8118</div>
+          <div><span>Broward:</span> (954) 533-3696</div>
+          <div><span>Miami:</span> (305) 500-9959</div>
+          <div><span>Facsimile:</span> (888) 633-7595</div>
+        </div>
+      </div>
+
+      <p class="line"><span class="b" data-f="date"></span></p>
+      <p class="line" style="margin-top:14px"><span class="u">Sent via e-mail to</span><span class="b" data-f="email"></span></p>
+      <p style="margin-top:14px"><span class="b" data-f="sal"></span> <span class="b" data-f="addr"></span></p>
+      <p class="re">RE: RETAINER AGREEMENT</p>
+
+      <p>Dear <span class="b" data-f="sal"></span> <span class="b" data-f="addr"></span>,</p>
+
+      <p>Thank you for entrusting Hager &amp; Schwartz, P.A. and its associated attorneys (hereinafter &ldquo;Law Firm&rdquo; or &ldquo;the Firm&rdquo;) to provide legal services to client, <span class="b" data-f="client"></span>, (hereinafter &ldquo;Client&rdquo;). This letter shall set forth the scope of our engagement, confirm that we are in mutual agreement regarding representation, set forth the financial arrangements and other terms, and verify your approval of these things, as follows:</p>
+
+      <p><span class="num">1.</span> <span class="u">Scope of Engagement:</span> The Firm will represent Client, <span class="b" data-f="client"></span>, in <span class="b" data-f="county"></span> County for <span class="b" data-f="scope"></span></p>
+
+      <p data-variant="today"><span class="num">2.</span> <span class="u">Fees:</span> As compensation for Law Firm&rsquo;s services, the fee for the matter is <span class="dollar">$</span><span class="b" data-f="fee"></span>, which is deemed earned upon receipt and non-refundable. Client shall pay <span class="dollar">$</span><span class="b" data-f="paytoday"></span> today.</p>
+
+      <p data-variant="trial" hidden><span class="num">2.</span> <span class="u">Fees:</span> As compensation for Law Firm&rsquo;s services, the fee for the matter is <span class="dollar">$</span><span class="b" data-f="fee"></span>, which is deemed earned upon receipt and non-refundable. Client shall pay <span class="dollar">$</span><span class="b" data-f="paytoday"></span> today and the balance is due within 30 days (<span class="dollar">$</span><span class="b" data-f="balance"></span>). A trial fee of <span class="dollar">$</span><span class="b" data-f="trial"></span> shall be due and owing should the case proceed to trial.</p>
+
+      <p>The Firm shall have no obligation to provide services to Client until and unless the fixed fee is paid as outlined above. The fixed fee is deemed earned upon payment to the Firm, and no portion of it will be refunded. <span class="bold">Client agrees that Law Firm shall be entitled to withdraw if the retainer fees or trial fees are not paid timely in accordance with this Agreement.</span></p>
+
+      <p>Client acknowledges that the basis for computing attorney fees has been explained to the client and that attorney compensation is based on time, labor, novelty and difficulty of the legal matter, time limitations imposed, and the reputation, experience and ability of the attorney. No guarantee as to outcome has been made by the attorney. This fee does not include appeal or re-trial if such should become necessary nor does it include costs of litigation as may become necessary.</p>
+
+      <p><span class="num">3.</span> <span class="u">Participation or Assistance of Other Attorney:</span> I, <span class="b" data-f="client"></span>, client, agree that an attorney: (1) other than the undersigned attorney; and (2) who is or is not employed by Hager &amp; Schwartz, P.A., may, without prior approval, render any of the following services to assist in the resolution of the legal matter(s) for which the undersigned attorney was retained: (1) appearances at pre-trial hearings; (2) participation in a trial; (3) assistance with legal research or other out-of-court matters; (4) conducting depositions; (5) any other matter necessary to assist in the resolution of the legal matter(s) for which the undersigned attorney was retained. This will be at no additional costs to the client. The primary attorney will be John S. Hager, Esq. Specifically, Brett Schwartz, Esq. may appear on behalf of the attorney at a non-evidentiary hearing.</p>
+
+      <p><span class="num">4.</span> <span class="u">Costs &amp; Fees:</span> Client agrees to pay all costs and investigative fees that are required for the adequate preparation of client&rsquo;s case. The CLIENT is responsible for all costs incurred in representing the client, in investigating the client's case, and in litigating the client's case. The costs are separate and apart from the attorney's fees. Costs include, but are not limited to, filing fees, expert witness fees, deposition fees, witness fees, mediation fees, summons fees, sheriff's fees, subpoena fees, court reporter fees, mileage, long distance telephone charges, and photocopy charges. Costs will be billed prior to incurring. Any unpaid balance which remains due after thirty (30) days will accrue interest charges at a rate of ten percent (10%) annually.</p>
+
+      <p>Client understands that depositions may have to be taken in this matter. If Attorney requests that depositions be taken, and Client agrees to such request, a retainer in the amount of $500 will be required prior to the depositions being set. Any funds remaining from the $500 will be immediately disbursed to Client at the conclusion of the case. If additional money is needed for depositions, and Client agrees with the taking of the depositions, that money is due immediately. Client understands that no depositions will be taken unless client pays the retainer for depositions.</p>
+
+      <p><span class="num">5.</span> <span class="u">Future Services:</span> Should additional services be requested or required beyond those described in paragraphs one and two, above, additional fees will be charged, and these must be the subject of a separate written Retainer Agreement. Law Firm&rsquo;s duty to represent Client ends when the case is dismissed, resolved by plea agreement, or following a trial.</p>
+
+      <p><span class="num">6.</span> <span class="u">Best Efforts:</span> Client agrees to use his or her best efforts in cooperating with all members of the Firm in providing all relevant information to assist in the preparation of Client&rsquo;s defense. Law Firm, and each of its employees, associated attorneys, and independent contractors, agrees to represent Client diligently and with their best efforts. I understand that my cooperation, as the client, is very important. I have been informed that I must keep the firm informed immediately of any change of address, phone number, employment and circumstances. I understand that full disclosure of all facts is essential to enable the firm to properly represent me. I will promptly fill out and return all papers sent to me, and will provide all documentation required or requested by the firm. I will also make all appearances as required by the court, or as requested by the firm, and will give the firm at least 24 hours notice if I cannot make any such appearance. If I fail to do so, I agree that the firm shall have the right to withdraw from representing me.</p>
+
+      <p><span class="num">7.</span> <span class="u">Modification:</span> This Retainer Agreement contains the entire understanding of the parties as to legal representation of Client by the Firm, and may be modified only by an instrument in writing signed by all parties.</p>
+
+      <p><span class="num">8.</span> <span class="u">Costs of Collection:</span> In the event of suit being required to collect fees and costs, the attorney shall be entitled to reasonable attorney fees and costs of collection. Client agrees that jurisdiction is proper in <span class="b" data-f="county"></span> County, Florida should litigation arise as to this contract. Prevailing party shall be entitled to all fees and costs expended for litigation of fees.</p>
+
+      <p><span class="num">9.</span> <span class="u">No Guarantee:</span> Client agrees that no representations have been made regarding the outcome of the case, and that any opinions expressed do not constitute any guarantee as to outcome.</p>
+
+      <p><span class="num">10.</span> <span class="u">Power of Attorney:</span> Client grants attorney a Power of Attorney to execute all documents connected with this case, including pleading, contracts, settlement agreements, drafts, checks, commercial paper, verifications, dismissals, and other documents that the client could otherwise execute. Client shall have to approve any plea agreement.</p>
+
+      <p><span class="num">11.</span> <span class="u">Other Contacts:</span> I, <span class="b" data-f="client"></span>, client, understand that the office of Hager &amp; Schwartz, P.A. would only like to communicate the fundamentals of my case with myself. However I, <span class="b" data-f="client"></span>, the undersigned client, am giving the office of Hager &amp; Schwartz, P.A. my permission to speak with the following person(s) about my case:
+        <span class="optional-label">Optional. Add a name and phone number, or leave blank.</span>
+        <input class="blank wide" id="other" type="text" maxlength="90" autocomplete="off" autocapitalize="words" enterkeyhint="next" placeholder="Name and phone number" aria-label="Person the firm may speak with">
+      </p>
+
+      <p><span class="num">12.</span> <span class="u">Termination of Contract:</span> I, <span class="b" data-f="client"></span>, client, understand that termination of this contract is reserved by the undersigned attorney for reasons such as: nonpayment of fees, costs, or expenses when due, or retainer on demand; lack of communication or cooperation; irreconcilable differences and subsequent determination of non-merit or personal conflict preventing effective representation. I, <span class="b" data-f="client"></span>, client, understand that I may cancel this agreement at any time, for any reason, without necessity of any reason, by notifying the attorney in writing to immediately terminate representation in my case and to perform no further legal services on my behalf. This notice must be in writing, dated and signed by myself, and must be e-mailed to Hager &amp; Schwartz, P.A. to tle@defendyourcase.com, faxed to (888) 633-7595 or hand delivered to the attorney or office located at 210 South Beach St., Suite 202, Daytona Beach, FL 32124, to become effective.</p>
+
+      <p><span class="num">13.</span> <span class="u">Entire Agreement:</span> This Agreement, along with any exhibits, appendices, addenda, schedules, and amendments hereto, encompasses the entire agreement of the parties, and supersedes all previous understandings and agreements between the parties, whether oral or written. The parties hereby acknowledge and represent, by affixing their hands and seals hereto, that said parties have not relied on any representation, assertion, guarantee, warranty, collateral contract or other assurance, except those set out in this Agreement, made by or on behalf of any other party or any other person or entity whatsoever, prior to the execution of this Agreement.</p>
+
+      <p>If this letter correctly sets forth your understanding of the services to be provided to you by Hager &amp; Schwartz, P.A., please sign this letter where indicated below and return it to us. If you have any questions about anything contained herein, please let us know without delay. Thank you once again for the confidence you express by allowing us to assist in your case.</p>
+
+      <p class="tight">Very truly yours,<br><span class="bold">HAGER &amp; SCHWARTZ, P.A.</span><br>A Professional Corporation</p>
+      <p class="sign-name" aria-label="Signed by John Hager">John Hager</p>
+      <p class="tight">JOHN HAGER, ESQ.<br>Attorney at Law</p>
+
+      <p>I have read and understood the foregoing and agree to and accept each of the terms and conditions.</p>
+
+      <div class="sigbox">
+        <span class="optional-label">Client signature. Sign with your finger now, or leave blank to sign the PDF later.</span>
+        <div class="pad" id="pad">
+          <canvas aria-label="Client signature pad"></canvas>
+          <span class="sign-hint">Sign here</span>
+        </div>
+        <div class="pad-row">
+          <span class="state" id="sigState">Not signed</span>
+          <button type="button" class="linkish" id="sigClear" hidden>Clear</button>
+        </div>
+      </div>
+      <p class="sigmeta" style="margin:0">
+        <span class="b" data-f="client" data-wide="1"></span>
+        <span class="b" data-f="phone" data-wide="1"></span>
+      </p>
+    </article>
+
+    <button type="button" class="linkish" id="sampleBtn">Fill with sample data</button><br>
+    <button type="button" class="linkish" id="resetBtn">Clear the whole form</button>
+
+    <div class="bar">
+      <div class="bar-in">
+        <div class="progress">
+          <div class="count" id="count" aria-live="polite">0 of 0 blanks filled</div>
+          <div class="track"><i id="trackFill"></i></div>
+        </div>
+        <button type="button" class="btn primary" id="createBtn">Create PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="resultView" hidden>
+    <div class="topbar">
+      <div class="topbar-in">
+        <div style="min-width:0">
+          <div class="fname" id="fname">Retainer Agreement.pdf</div>
+          <div class="fmeta" id="fmeta"></div>
+        </div>
+        <div class="btns">
+          <button type="button" class="btn ghost" id="editBtn">Edit</button>
+          <button type="button" class="btn primary" id="saveBtn">Save PDF</button>
+        </div>
+      </div>
+    </div>
+    <div class="desk" id="desk" aria-label="PDF preview"></div>
+    <div class="after">
+      <p id="saveNote"></p>
+      <button type="button" class="linkish" id="newBtn" style="justify-self:start">Start a new agreement</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+</div>
+
+<script type="application/json" id="tpl">__TEMPLATES_JSON__</script>
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  var DRAFT_KEY = "hs-retainer-draft-v1";
+  var TPL = JSON.parse($("tpl").textContent);
+
+  /* ---------- field setup ---------- */
+  var CFG = {
+    date:     { label: "Date", type: "date", w: "11.5em", req: true },
+    email:    { label: "Client e-mail", type: "email", w: "100%", ph: "client@example.com", max: 50, mode: "email", ac: "off", cap: "none", req: true, block: true },
+    sal:      { label: "Mr. or Ms.", type: "select", w: "4.4em", req: true },
+    addr:     { label: "Client name as addressed", type: "text", w: "9.5em", ph: "Last name", max: 40, cap: "words", ac: "off", req: true },
+    client:   { label: "Client full name", type: "text", w: "13em", ph: "CLIENT FULL NAME", max: 34, cap: "characters", ac: "off", req: true },
+    county:   { label: "County", type: "text", w: "7.5em", ph: "County", max: 18, cap: "words", ac: "off", req: true },
+    scope:    { label: "Charge or case", type: "text", w: "100%", ph: "Charge and case number", max: 60, cap: "sentences", ac: "off", req: true, block: true },
+    fee:      { label: "Total fee", type: "text", w: "5.6em", ph: "0", max: 10, mode: "decimal", ac: "off", req: true, money: true },
+    paytoday: { label: "Paid today", type: "text", w: "5.6em", ph: "0", max: 10, mode: "decimal", ac: "off", req: true, money: true },
+    balance:  { label: "Balance due in 30 days", type: "text", w: "5.6em", ph: "0", max: 10, mode: "decimal", ac: "off", req: true, money: true, only: "trial" },
+    trial:    { label: "Trial fee", type: "text", w: "5.6em", ph: "0", max: 10, mode: "decimal", ac: "off", req: true, money: true, only: "trial" },
+    phone:    { label: "Client phone", type: "tel", w: "100%", ph: "Client phone number", max: 20, mode: "tel", ac: "off", req: true, block: true }
+  };
+  var V = { sal: "Mr." };
+  var variant = "today";
+  var dirty = { paytoday: false, balance: false };
+
+  document.querySelectorAll(".b").forEach(function (span) {
+    var f = span.getAttribute("data-f"), c = CFG[f], el;
+    if (c.type === "select") {
+      el = document.createElement("select");
+      ["Mr.", "Ms."].forEach(function (t) { var o = document.createElement("option"); o.value = t; o.textContent = t; el.appendChild(o); });
+    } else {
+      el = document.createElement("input");
+      el.type = c.type;
+      if (c.ph) el.placeholder = c.ph;
+      if (c.max) el.maxLength = c.max;
+      if (c.mode) el.setAttribute("inputmode", c.mode);
+      if (c.mode === "decimal") el.setAttribute("enterkeyhint", "next");
+      el.autocomplete = c.ac || "off";
+      if (c.cap) el.setAttribute("autocapitalize", c.cap);
+      if (c.type === "email") el.setAttribute("autocorrect", "off");
+    }
+    el.className = "blank" + (c.block || span.getAttribute("data-wide") ? " wide" : "");
+    el.setAttribute("data-f", f);
+    el.setAttribute("aria-label", c.label);
+    el.style.setProperty("--w", c.w);
+    span.replaceWith(el);
+  });
+
+  function els(f) { return Array.prototype.slice.call(document.querySelectorAll('[data-f="' + f + '"]')); }
+  function activeFields() {
+    return Object.keys(CFG).filter(function (f) { return !CFG[f].only || CFG[f].only === variant; });
+  }
+
+  /* ---------- helpers ---------- */
+  function todayISO() {
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function fmtDate(iso) {
+    var p = String(iso).split("-").map(Number);
+    if (p.length !== 3 || !p[0]) return String(iso);
+    return MONTHS[p[1] - 1] + " " + p[2] + ", " + p[0];
+  }
+  function toNum(v) { return parseFloat(String(v).replace(/[^0-9.]/g, "")); }
+  function fmtMoney(v) {
+    var n = toNum(v);
+    if (!isFinite(n)) return "";
+    var whole = Math.abs(n - Math.round(n)) < 0.005;
+    return n.toLocaleString("en-US", { minimumFractionDigits: whole ? 0 : 2, maximumFractionDigits: 2 });
+  }
+  // The PDF's built-in Times covers Latin-1 only; iOS smart punctuation adds curly quotes and dashes.
+  function clean(s) {
+    return String(s == null ? "" : s)
+      .replace(/[‘’‛]/g, "'")
+      .replace(/[“”„]/g, '"')
+      .replace(/[–—]/g, "-")
+      .replace(/…/g, "...")
+      .replace(/[   ]/g, " ")
+      .replace(/\s*\n\s*/g, " ")
+      .replace(/[^\x20-\x7E\xA1-\xFF]/g, "?")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+  }
+  var toastTimer;
+  function toast(msg) {
+    var t = $("toast");
+    t.textContent = msg;
+    t.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.hidden = true; }, 3200);
+  }
+
+  /* ---------- validation ---------- */
+  function problem(f) {
+    var v = String(V[f] == null ? "" : V[f]).trim();
+    var c = CFG[f];
+    if (!v) return c.req ? "Fill in: " + c.label.toLowerCase() : "";
+    if (f === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) return "Enter a valid e-mail address";
+    if (c.money) { var n = toNum(v); if (!isFinite(n) || n <= 0) return "Enter an amount greater than zero"; }
+    if (f === "phone" && v.replace(/\D/g, "").length < 7) return "Enter a full phone number";
+    return "";
+  }
+  function paint(f) {
+    var bad = !!problem(f);
+    var has = String(V[f] == null ? "" : V[f]).trim() !== "";
+    els(f).forEach(function (e) {
+      e.classList.toggle("filled", has && !bad);
+      if (!has || !bad) e.classList.remove("invalid");
+    });
+  }
+  function updateProgress() {
+    var fs = activeFields().filter(function (f) { return f !== "sal"; });
+    var done = fs.filter(function (f) { return !problem(f); }).length;
+    $("count").textContent = done + " of " + fs.length + " blanks filled";
+    $("trackFill").style.width = Math.round((done / fs.length) * 100) + "%";
+  }
+
+  /* ---------- state: one value per field, mirrored everywhere ---------- */
+  function setField(f, val, src) {
+    V[f] = val;
+    els(f).forEach(function (e) { if (e !== src && e.value !== val) e.value = val; });
+    paint(f);
+  }
+  // Paid-today copies the fee, and the balance is fee minus paid-today, until the person types their own number.
+  function autoMoney(src) {
+    var fee = toNum(V.fee);
+    if (src === "fee" && !dirty.paytoday) setField("paytoday", isFinite(fee) ? String(V.fee).trim() : "");
+    if (variant === "trial" && !dirty.balance && src !== "balance") {
+      var pay = toNum(V.paytoday);
+      var bal = isFinite(fee) && isFinite(pay) ? fee - pay : NaN;
+      setField("balance", isFinite(bal) && bal > 0 ? fmtMoney(bal) : "");
+    }
+  }
+  var saveTimer;
+  function saveDraft() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(function () {
+      try {
+        var o = { V: V, variant: variant, other: $("other").value, dirty: dirty };
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(o));
+      } catch (e) {}
+    }, 300);
+  }
+  function clearDraft() { try { localStorage.removeItem(DRAFT_KEY); } catch (e) {} }
+
+  document.getElementById("sheet").addEventListener("input", function (e) {
+    var el = e.target, f = el.getAttribute && el.getAttribute("data-f");
+    if (!f) { if (el.id === "other") saveDraft(); return; }
+    if (f === "client") {
+      var up = el.value.toUpperCase();
+      if (up !== el.value) {
+        var a0 = el.selectionStart, a1 = el.selectionEnd;
+        el.value = up;
+        try { el.setSelectionRange(a0, a1); } catch (x) {}
+      }
+    }
+    setField(f, el.value, el);
+    if (f === "paytoday") dirty.paytoday = el.value.trim() !== "";
+    if (f === "balance") dirty.balance = el.value.trim() !== "";
+    if (f === "fee" || f === "paytoday") autoMoney(f);
+    updateProgress();
+    saveDraft();
+  });
+  document.getElementById("sheet").addEventListener("change", function (e) {
+    var el = e.target, f = el.getAttribute && el.getAttribute("data-f");
+    if (f === "sal") { setField(f, el.value, el); saveDraft(); }
+  });
+  document.getElementById("sheet").addEventListener("focusout", function (e) {
+    var el = e.target, f = el.getAttribute && el.getAttribute("data-f");
+    if (!f || f === "sal") return;
+    if (String(V[f] || "").trim() && problem(f)) els(f).forEach(function (x) { x.classList.add("invalid"); });
+  });
+
+  /* ---------- payment terms switch ---------- */
+  function setVariant(v) {
+    variant = v;
+    document.querySelectorAll("[data-variant-btn]").forEach(function (b) {
+      b.setAttribute("aria-checked", b.getAttribute("data-variant-btn") === v ? "true" : "false");
+    });
+    document.querySelectorAll("[data-variant]").forEach(function (p) { p.hidden = p.getAttribute("data-variant") !== v; });
+    autoMoney("variant");
+    updateProgress();
+  }
+  document.querySelectorAll("[data-variant-btn]").forEach(function (b) {
+    b.addEventListener("click", function () { setVariant(b.getAttribute("data-variant-btn")); saveDraft(); });
+  });
+
+  /* ---------- signature pad ---------- */
+  var pad = (function () {
+    var root = $("pad"), canvas = root.querySelector("canvas"), ctx = canvas.getContext("2d");
+    var strokes = [], cur = null, w = 0, h = 0, dpr = 1;
+    var PEN = 0.0076; // pen width in units of the pad's width
+    function draw(c, scale, lw) {
+      c.lineCap = "round"; c.lineJoin = "round";
+      c.strokeStyle = "#111111"; c.fillStyle = "#111111"; c.lineWidth = lw;
+      strokes.forEach(function (s) {
+        if (s.length === 1) { c.beginPath(); c.arc(s[0].x * scale, s[0].y * scale, lw / 2, 0, Math.PI * 2); c.fill(); return; }
+        c.beginPath(); c.moveTo(s[0].x * scale, s[0].y * scale);
+        for (var i = 1; i < s.length - 1; i++) {
+          var mx = (s[i].x + s[i + 1].x) / 2, my = (s[i].y + s[i + 1].y) / 2;
+          c.quadraticCurveTo(s[i].x * scale, s[i].y * scale, mx * scale, my * scale);
+        }
+        var last = s[s.length - 1];
+        c.lineTo(last.x * scale, last.y * scale);
+        c.stroke();
+      });
+    }
+    function redraw() { if (!w) return; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h); draw(ctx, w, PEN * w); }
+    function size() {
+      var r = canvas.getBoundingClientRect();
+      if (!r.width) return;
+      w = r.width; h = r.height; dpr = Math.min(window.devicePixelRatio || 1, 3);
+      canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+      redraw();
+    }
+    function pt(e) { var r = canvas.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.width }; }
+    function state() {
+      var has = strokes.length > 0;
+      root.classList.toggle("has-ink", has);
+      $("sigState").textContent = has ? "Signed" : "Not signed";
+      $("sigState").classList.toggle("signed", has);
+      $("sigClear").hidden = !has;
+    }
+    function end(e) {
+      if (!cur) return;
+      cur = null;
+      try { canvas.releasePointerCapture(e.pointerId); } catch (x) {}
+      state();
+    }
+    canvas.addEventListener("pointerdown", function (e) {
+      e.preventDefault();
+      try { canvas.setPointerCapture(e.pointerId); } catch (x) {}
+      cur = [pt(e)]; strokes.push(cur); root.classList.add("has-ink"); redraw();
+    });
+    canvas.addEventListener("pointermove", function (e) { if (!cur) return; e.preventDefault(); cur.push(pt(e)); redraw(); });
+    canvas.addEventListener("pointerup", end);
+    canvas.addEventListener("pointercancel", end);
+    if (window.ResizeObserver) new ResizeObserver(size).observe(canvas);
+    window.addEventListener("resize", size);
+    size();
+    return {
+      clear: function () { strokes.length = 0; redraw(); state(); },
+      // Cropped to the ink, transparent background, ready to place on the signature line.
+      png: function () {
+        if (!strokes.length) return null;
+        var minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
+        strokes.forEach(function (s) { s.forEach(function (p) {
+          if (p.x < minX) minX = p.x; if (p.x > maxX) maxX = p.x;
+          if (p.y < minY) minY = p.y; if (p.y > maxY) maxY = p.y;
+        }); });
+        var m = 0.02;
+        minX -= m; minY -= m; maxX += m; maxY += m;
+        var bw = maxX - minX, bh = maxY - minY, k = 1000 / Math.max(bw, bh);
+        var c = document.createElement("canvas");
+        c.width = Math.max(2, Math.round(bw * k)); c.height = Math.max(2, Math.round(bh * k));
+        var cx = c.getContext("2d");
+        cx.translate(-minX * k, -minY * k);
+        draw(cx, k, PEN * k);
+        return { url: c.toDataURL("image/png"), ratio: c.width / c.height };
+      }
+    };
+  })();
+  $("sigClear").addEventListener("click", function () { pad.clear(); });
+
+  /* ---------- fill the original PDF ---------- */
+  function b64ToBytes(b64) {
+    var bin = atob(b64), out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+  // The attorney's signature line is redrawn in a cursive face. Written to a canvas, then placed as an image.
+  async function cursiveName(text) {
+    var family = '"Dancing Script", "Snell Roundhand", "Apple Chancery", "Brush Script MT", cursive';
+    try {
+      await Promise.race([document.fonts.load('600 80px "Dancing Script"', text), new Promise(function (r) { setTimeout(r, 2500); })]);
+    } catch (e) {}
+    var px = 200, c = document.createElement("canvas"), cx = c.getContext("2d");
+    cx.font = "600 " + px + "px " + family;
+    var w = Math.ceil(cx.measureText(text).width) + 60, h = Math.round(px * 1.5);
+    c.width = w; c.height = h;
+    cx = c.getContext("2d");
+    cx.font = "600 " + px + "px " + family;
+    cx.fillStyle = "#000000";
+    cx.textBaseline = "alphabetic";
+    cx.fillText(text, 30, Math.round(px * 1.05));
+    return { url: c.toDataURL("image/png"), ratio: w / h };
+  }
+  async function buildPdf() {
+    var L = window.PDFLib;
+    var tpl = TPL[variant];
+    var pdf = await L.PDFDocument.load(b64ToBytes(tpl.b64));
+    var font = await pdf.embedFont(L.StandardFonts.TimesRoman);
+    var pages = pdf.getPages();
+
+    // Remove the fillable boxes so the saved file is a finished, flat document.
+    pages.forEach(function (p) { p.node.set(L.PDFName.of("Annots"), pdf.context.obj([])); });
+    try { pdf.catalog.delete(L.PDFName.of("AcroForm")); } catch (e) {}
+
+    var black = L.rgb(0, 0, 0), white = L.rgb(1, 1, 1);
+    var SIZE = 12, SPACE = 3, MIN_STRETCH = 2.2, MAX_STRETCH = 5.5, RIGHT = 540, MIN_SIZE = 6.5;
+    function wid(text, size) { return text ? font.widthOfTextAtSize(text, size) : 0; }
+    var vals = {
+      date: fmtDate(V.date), email: V.email, sal: V.sal, addr: V.addr,
+      client: clean(clean(V.client).toUpperCase()),
+      county: V.county, scope: V.scope, phone: V.phone,
+      fee: fmtMoney(V.fee), paytoday: fmtMoney(V.paytoday), balance: fmtMoney(V.balance), trial: fmtMoney(V.trial)
+    };
+    Object.keys(vals).forEach(function (k) { if (k !== "client") vals[k] = clean(vals[k]); });
+
+    // Each line that holds a blank is set again from its first non-heading word: the typed text keeps the
+    // letter's 12 pt Times, and the spaces on the line stretch or tighten so no gap is left behind.
+    tpl.lines.forEach(function (line) {
+      var items = line.items, n = items.length;
+      var text = items.map(function (it) { return it.k === "f" ? (vals[it.name] || "") : it.t; });
+      var sizes = items.map(function () { return SIZE; });
+      var kinds = items.map(function (it, i) {
+        if (i === 0) return { space: false, gap: 0 };
+        var p = items[i - 1], g = it.x0 - p.x1;
+        var sp = g >= 1.5 || (p.k === "f" && it.k === "f");
+        return { space: sp, gap: sp ? 0 : Math.max(g, 0) };
+      });
+      var spaces = kinds.filter(function (k) { return k.space; }).length;
+      var startX = items[0].x0, stretch = SPACE, guard = 0;
+      for (;;) {
+        var total = 0, attach = 0, i;
+        for (i = 0; i < n; i++) { total += wid(text[i], sizes[i]); attach += kinds[i].gap; }
+        var ok;
+        if (line.justified && spaces > 0) {
+          stretch = (line.R - startX - total - attach) / spaces;
+          ok = stretch >= MIN_STRETCH;
+          if (stretch > MAX_STRETCH) stretch = MAX_STRETCH;
+        } else {
+          stretch = SPACE;
+          ok = startX + total + attach + spaces * SPACE <= RIGHT;
+        }
+        if (ok || ++guard > 200) break;
+        var shrunk = false;
+        for (i = 0; i < n; i++) {
+          if (items[i].k === "f" && text[i] && sizes[i] > MIN_SIZE) { sizes[i] -= 0.25; shrunk = true; }
+        }
+        if (!shrunk) break;
+      }
+      var page = pages[line.page];
+      if (items.some(function (it) { return it.k === "w"; })) {
+        page.drawRectangle({ x: startX - 0.4, y: line.base - 3.4, width: line.R - startX + 1, height: 14, color: white, borderWidth: 0 });
+      }
+      var x = startX;
+      for (var j = 0; j < n; j++) {
+        if (j > 0) x += kinds[j].space ? stretch : kinds[j].gap;
+        if (text[j]) page.drawText(text[j], { x: x, y: line.base, size: sizes[j], font: font, color: black });
+        x += wid(text[j], sizes[j]);
+      }
+    });
+
+    var other = clean($("other").value);
+    if (other) {
+      var osz = SIZE;
+      while (osz > MIN_SIZE && wid(other, osz) > 440) osz -= 0.25;
+      pages[tpl.other.page].drawText(other, { x: tpl.other.x, y: tpl.other.y, size: osz, font: font, color: black });
+    }
+
+    // Replace the attorney's printed-style signature on the last page with a cursive one.
+    try {
+      var sn = tpl.sigName, cur = await cursiveName("John Hager");
+      var simg = await pdf.embedPng(cur.url);
+      var sw = 122, sh = sw / cur.ratio;
+      if (sh > 44) { sh = 44; sw = sh * cur.ratio; }
+      var last = pages[sn.page], mid = (sn.yb + sn.yt) / 2;
+      last.drawRectangle({ x: sn.x - 1, y: sn.yb - 1.2, width: 126, height: sn.yt - sn.yb + 3.2, color: white, borderWidth: 0 });
+      last.drawImage(simg, { x: sn.x - 4, y: mid - sh * 0.5 - 1, width: sw, height: sh });
+    } catch (e) { /* keep the original signature if the cursive one cannot be drawn */ }
+
+    var sig = pad.png();
+    if (sig) {
+      var img = await pdf.embedPng(sig.url);
+      var maxW = 230, maxH = 36;
+      var hh = Math.min(maxH, maxW / sig.ratio), ww = hh * sig.ratio;
+      pages[tpl.sig.page].drawImage(img, { x: tpl.sig.x + 2, y: tpl.sig.y, width: ww, height: hh });
+    }
+    pdf.setTitle("Retainer Agreement - " + clean(V.client));
+    return await pdf.save();
+  }
+
+  /* ---------- result view ---------- */
+  var current = { bytes: null, filename: "Retainer Agreement.pdf", token: 0 };
+  function showView(name) {
+    $("formView").hidden = name !== "form";
+    $("resultView").hidden = name !== "result";
+    window.scrollTo(0, 0);
+  }
+  async function renderPages(bytes, token) {
+    var desk = $("desk");
+    desk.innerHTML = "";
+    var lib = window.pdfjsLib;
+    var fallback = '<div class="msg">The PDF is ready. The preview could not load here, so use Save PDF to open it.</div>';
+    if (!lib) { desk.innerHTML = fallback; return; }
+    try {
+      lib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      var pdf = await lib.getDocument({ data: new Uint8Array(bytes), useSystemFonts: true }).promise;
+      var cssW = Math.max(desk.clientWidth - 24, 240);
+      var dpr = Math.min(window.devicePixelRatio || 1, 3);
+      for (var i = 1; i <= pdf.numPages; i++) {
+        if (token !== current.token) return;
+        var page = await pdf.getPage(i);
+        var base = page.getViewport({ scale: 1 });
+        var vp = page.getViewport({ scale: (cssW / base.width) * dpr });
+        var c = document.createElement("canvas");
+        c.width = Math.floor(vp.width); c.height = Math.floor(vp.height);
+        c.setAttribute("role", "img");
+        c.setAttribute("aria-label", "Page " + i + " of " + pdf.numPages);
+        desk.appendChild(c);
+        await page.render({ canvasContext: c.getContext("2d"), viewport: vp }).promise;
+      }
+    } catch (err) {
+      desk.innerHTML = fallback;
+    }
+  }
+  function fileNameFor() {
+    var base = ("Retainer Agreement - " + clean(V.client)).replace(/[\\\/:*?"<>|]+/g, "").replace(/\s+/g, " ").trim();
+    return base.slice(0, 120) + ".pdf";
+  }
+  async function createPdf() {
+    var first = null;
+    activeFields().forEach(function (f) {
+      var msg = problem(f);
+      els(f).forEach(function (e) { e.classList.toggle("invalid", !!msg); });
+      if (msg && !first) first = els(f).filter(function (e) { return e.offsetParent !== null; })[0] || null;
+    });
+    if (first) {
+      first.scrollIntoView({ block: "center", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      first.focus({ preventScroll: true });
+      toast("Fill in the highlighted blank.");
+      return;
+    }
+    if (!window.PDFLib) { toast("The PDF tool did not load. Reload the page and try again."); return; }
+    var btn = $("createBtn");
+    btn.disabled = true;
+    btn.textContent = "Creating...";
+    try {
+      var bytes = await buildPdf();
+      current.bytes = bytes;
+      current.filename = fileNameFor();
+      current.token++;
+      $("fname").textContent = current.filename;
+      $("saveNote").textContent = "";
+      showView("result");
+      $("desk").innerHTML = '<div class="msg">Building preview...</div>';
+      await renderPages(bytes, current.token);
+      var np = $("desk").querySelectorAll("canvas").length;
+      $("fmeta").textContent = (np || 4) + " pages · " + Math.max(1, Math.round(bytes.byteLength / 1024)) + " KB";
+    } catch (err) {
+      toast("Could not create the PDF. Check the blanks and try again.");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Create PDF";
+    }
+  }
+
+  /* ---------- saving ---------- */
+  var downloadsP = null;
+  function getDownloads() {
+    if (!downloadsP) {
+      downloadsP = (window.claude && window.claude.use)
+        ? window.claude.use("downloads").catch(function () { return null; })
+        : Promise.resolve(null);
+    }
+    return downloadsP;
+  }
+  async function savePdf() {
+    if (!current.bytes) return;
+    var dl = await getDownloads();
+    if (!dl) { $("saveNote").textContent = "Saving is not available in this view. Open this page in the Claude app to save the PDF."; return; }
+    var btn = $("saveBtn");
+    btn.disabled = true;
+    try {
+      await dl.save({ filename: current.filename, data: new Blob([current.bytes], { type: "application/pdf" }) });
+      $("saveNote").textContent = "Saved. Use the save sheet to send it by e-mail or message.";
+    } catch (e) {
+      if (e && e.code === "declined") { /* viewer said no */ }
+      else if (e && e.code === "rate_limited") toast("A save prompt is already open. Try again in a moment.");
+      else $("saveNote").textContent = "The PDF could not be saved from this view.";
+    } finally { btn.disabled = false; }
+  }
+
+  /* ---------- reset, sample, restore ---------- */
+  function applyAll() {
+    Object.keys(CFG).forEach(function (f) { els(f).forEach(function (e) { e.value = V[f] == null ? "" : V[f]; }); });
+    Object.keys(CFG).forEach(paint);
+    setVariant(variant);
+  }
+  function resetAll() {
+    V = { sal: "Mr.", date: todayISO() };
+    dirty = { paytoday: false, balance: false };
+    $("other").value = "";
+    pad.clear();
+    clearDraft();
+    els("sal").forEach(function (e) { e.value = "Mr."; });
+    applyAll();
+    document.querySelectorAll(".blank.invalid").forEach(function (e) { e.classList.remove("invalid"); });
+  }
+  function fillSample() {
+    V = { sal: "Ms.", addr: "Gonzalez", client: "MARIA ELENA GONZALEZ", county: "Volusia", scope: "Misdemeanor Battery, Case No. 2026-MM-004512",
+      email: "maria.gonzalez@example.com", phone: "(386) 555-0142", fee: "3500", paytoday: "1500", balance: "2,000", trial: "1500", date: todayISO() };
+    dirty = { paytoday: false, balance: false };
+    applyAll();
+    updateProgress();
+    saveDraft();
+    toast("Sample data filled in. Replace it with your own.");
+  }
+  function restore() {
+    try {
+      var raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      var o = JSON.parse(raw);
+      if (o.V) V = o.V;
+      if (V.client) V.client = String(V.client).toUpperCase();
+      if (o.variant === "today" || o.variant === "trial") variant = o.variant;
+      if (o.dirty) dirty = o.dirty;
+      if (typeof o.other === "string") $("other").value = o.other;
+    } catch (e) {}
+  }
+
+  restore();
+  if (!V.sal) V.sal = "Mr.";
+  if (!V.date) V.date = todayISO();
+  applyAll();
+  updateProgress();
+
+  $("createBtn").addEventListener("click", createPdf);
+  $("sampleBtn").addEventListener("click", fillSample);
+  $("editBtn").addEventListener("click", function () { current.token++; showView("form"); });
+  $("saveBtn").addEventListener("click", savePdf);
+
+  function armedButton(btn, idle, action) {
+    var armed = false, t;
+    btn.addEventListener("click", function () {
+      if (!armed) {
+        armed = true;
+        btn.textContent = "Tap again to clear everything";
+        clearTimeout(t);
+        t = setTimeout(function () { armed = false; btn.textContent = idle; }, 4000);
+        return;
+      }
+      armed = false; clearTimeout(t); btn.textContent = idle; action();
+    });
+  }
+  armedButton($("resetBtn"), "Clear the whole form", function () { resetAll(); toast("Form cleared."); });
+  armedButton($("newBtn"), "Start a new agreement", function () { current.token++; current.bytes = null; resetAll(); showView("form"); });
+
+  getDownloads();
+})();
+</script>
